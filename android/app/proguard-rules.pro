@@ -1,0 +1,1 @@
+-keep class fr.esiee.beetter.data.model.** { *; }

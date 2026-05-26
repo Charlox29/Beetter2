@@ -1,0 +1,52 @@
+# ── Environment ────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Python ─────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# ── Docker ─────────────────────────────────────────────────────
+# (volumes are managed by Docker, not tracked in git)
+
+# ── Database / storage ─────────────────────────────────────────
+*.db
+*.sqlite3
+
+# ── OS ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Editors ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Logs ───────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Android ────────────────────────────────────────────────────
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/*.keystore
+android/keystore.properties
+
+# ── SH ─────────────────────────────────────────────────────────
+*.sh
