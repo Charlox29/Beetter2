@@ -28,7 +28,7 @@ Ce sont deux problèmes fondamentalement différents :
 
 **PostgreSQL** stocke des données *structurelles* qui changent rarement : qui est l'apiculteur, comment s'appelle la ruche, quel est son emplacement. Ce sont des entités avec des relations entre elles (une ruche appartient à un apiculteur). SQL est conçu pour ça.
 
-**InfluxDB** stocke des données *temporelles* qui arrivent en continu : température toutes les 5 minutes, humidité, CO2, audio. Ce type de données a des contraintes très différentes — on n'y fait presque jamais de mise à jour, on y fait beaucoup de requêtes "donne-moi la moyenne sur les 24 dernières heures". InfluxDB est optimisé pour ces lectures temporelles et est 10 à 100x plus rapide que PostgreSQL pour ce cas d'usage.
+**InfluxDB** stocke des données *temporelles* qui arrivent en continu : température toutes les 5 minutes, humidité, audio. Ce type de données a des contraintes très différentes — on n'y fait presque jamais de mise à jour, on y fait beaucoup de requêtes "donne-moi la moyenne sur les 24 dernières heures". InfluxDB est optimisé pour ces lectures temporelles et est 10 à 100x plus rapide que PostgreSQL pour ce cas d'usage.
 
 Essayer de tout mettre dans PostgreSQL fonctionnerait au début, mais deviendrait lent dès qu'on accumule quelques semaines de données sur plusieurs ruches.
 
@@ -547,9 +547,5 @@ chore: mise à jour Flask 3.0.3 → 3.1.0
 ---
 
 ## Règles de travail en équipe
-
-**Ne jamais pousser directement sur `main`.** La branche `main` est la version qui tourne sur le Pi. Chaque développement se fait sur une branche séparée, mergée via Pull Request après relecture.
-
-**Le Pi ne pull que `main`.** `./deploy.sh` uniquement depuis la branche stable.
 
 **Les secrets ne vont jamais dans Git.** Le fichier `.env` est dans `.gitignore`. Si un token apparaît dans un commit, il faut le révoquer immédiatement — les tokens visibles dans l'historique Git sont compromis même après suppression.
