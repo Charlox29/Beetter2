@@ -66,7 +66,7 @@ Ce sont deux problèmes fondamentalement différents :
 
 **PostgreSQL** stocke des données *structurelles* qui changent rarement : qui est l'apiculteur, comment s'appelle la ruche, quel est son emplacement. Ce sont des entités avec des relations entre elles (une ruche appartient à un apiculteur). SQL est conçu pour ça.
 
-**InfluxDB** stocke des données *temporelles* qui arrivent en continu : température toutes les 5 minutes, humidité, CO2, audio. Ce type de données a des contraintes très différentes — on n'y fait presque jamais de mise à jour, on y fait beaucoup de requêtes "donne-moi la moyenne sur les 24 dernières heures". InfluxDB est optimisé pour ces lectures temporelles et est 10 à 100x plus rapide que PostgreSQL pour ce cas d'usage.
+**InfluxDB** stocke des données *temporelles* qui arrivent en continu : température et humidité (intérieures et extérieures), niveau sonore, luminosité. Ce type de données a des contraintes très différentes — on n'y fait presque jamais de mise à jour, on y fait beaucoup de requêtes "donne-moi la moyenne sur les 24 dernières heures". InfluxDB est optimisé pour ces lectures temporelles et est 10 à 100x plus rapide que PostgreSQL pour ce cas d'usage.
 
 ### Pourquoi Docker Compose ?
 
@@ -546,22 +546,22 @@ Bootstrap 5 est déjà inclus via `base.html`. Pour des styles personnalisés, �
 
 ### Concepts fondamentaux
 
-InfluxDB organise les données différemment d'une base SQL classique. Il faut comprendre quatre concepts :
+InfluxDB organise les données différemment d'une base SQL classique. Il faut comprendre cinq concepts :
 
-**Bucket** — l'équivalent d'une base de données. Dans Beetter il y en a un : `ruche`.
+**Bucket** — l'équivalent d'une base de données. Dans Beetter son nom vient de `INFLUXDB_BUCKET` (par défaut `sensors`).
 
-**Measurement** — l'équivalent d'une table. Dans Beetter : `releve`.
+**Measurement** — l'équivalent d'une table. Dans Beetter il y a une mesure par grandeur relevée : `temperature_int`, `humidity_int`, `temperature_ext`, `humidity_ext`, `sound_freq_int`, `sound_amp_int`, `sound_freq_ext`, `sound_amp_ext`, `light_ext`.
 
-**Tags** — des champs indexés utilisés pour filtrer. Exemple : `ruche_id`. Ce sont des strings, ils ne stockent pas de valeurs numériques. Toujours utiliser des tags pour ce sur quoi on va filtrer souvent.
+**Tags** — des champs indexés utilisés pour filtrer. Exemple : `beehive_id`. Ce sont des strings, ils ne stockent pas de valeurs numériques. Toujours utiliser des tags pour ce sur quoi on va filtrer souvent.
 
-**Fields** — les valeurs numériques réelles. Exemple : `temperature`, `humidite`, `co2`, `poids`. Non indexés, lus séquentiellement.
+**Fields** — les valeurs numériques réelles. Chaque mesure porte un unique champ `value` (la valeur relevée). Non indexés, lus séquentiellement.
 
 **Timestamp** — chaque point a un horodatage nanoseconde.
 
 ```
-measurement : "releve"
-    tag     : ruche_id = "ruche_01"
-    fields  : temperature=34.2, humidite=68.4, co2=1240.0, poids=42.35
+measurement : "temperature_int"
+    tag     : beehive_id = "1"
+    field   : value=34.7
     time    : 2026-05-19T14:32:00Z
 ```
 
@@ -581,25 +581,35 @@ def get_client():
         org=current_app.config["INFLUXDB_ORG"],
     )
 
-def write_releve(decoded: dict):
-    """Écrit un relevé complet (une trame LoRa) dans InfluxDB."""
+def write_sensor_data(decoded: dict):
+    """Écrit un relevé (une trame LoRa décodée) dans InfluxDB.
+
+    Une mesure (measurement) par grandeur, taggée par `beehive_id`,
+    avec un unique champ `value`. On n'écrit que les grandeurs présentes.
+    """
     client = get_client()
     write_api = client.write_api(write_options=SYNCHRONOUS)
 
-    p = (
-        Point("releve")
-        .tag("ruche_id", str(decoded["ruche_id"]))
+    mapping = {
+        "temperature_int": decoded.get("temperature_int"),
+        "humidity_int":    decoded.get("humidity_int"),
+        "temperature_ext": decoded.get("temperature_ext"),
+        "humidity_ext":    decoded.get("humidity_ext"),
+        "sound_freq_int":  decoded.get("sound_freq_int"),
+        "sound_amp_int":   decoded.get("sound_amp_int"),
+        "sound_freq_ext":  decoded.get("sound_freq_ext"),
+        "sound_amp_ext":   decoded.get("sound_amp_ext"),
+        "light_ext":       decoded.get("light_ext"),
+    }
+    points = [
+        Point(measurement)
+        .tag("beehive_id", str(decoded["beehive_id"]))
+        .field("value", float(value))
         .time(decoded["timestamp"])
-        .field("temperature",   decoded["temperature"])
-        .field("humidite",      decoded["humidite"])
-        .field("co2",           decoded["co2"])
-        .field("poids",         decoded["poids"])
-        .field("audio_peak_hz", decoded["audio_peak_hz"])
-        .field("audio_rms",     decoded["audio_rms"])
-        .field("rssi",          decoded["rssi"])
-        .field("batterie_mv",   decoded["batterie_mv"])
-    )
-    write_api.write(bucket=current_app.config["INFLUXDB_BUCKET"], record=p)
+        for measurement, value in mapping.items()
+        if value is not None
+    ]
+    write_api.write(bucket=current_app.config["INFLUXDB_BUCKET"], record=points)
 
 def get_latest(beehive_id: int) -> dict:
     """Retourne le dernier relevé d'une ruche."""
@@ -607,10 +617,10 @@ def get_latest(beehive_id: int) -> dict:
     query = f'''
         from(bucket: "{current_app.config["INFLUXDB_BUCKET"]}")
           |> range(start: -1h)
-          |> filter(fn: (r) => r._measurement == "releve")
-          |> filter(fn: (r) => r.ruche_id == "{beehive_id}")
+          |> filter(fn: (r) => r.beehive_id == "{beehive_id}")
+          |> filter(fn: (r) => r._measurement == "temperature_int" or r._measurement == "humidity_int" or r._measurement == "temperature_ext" or r._measurement == "humidity_ext")
           |> last()
-          |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+          |> pivot(rowKey: ["_time"], columnKey: ["_measurement"], valueColumn: "_value")
     '''
     tables = client.query_api().query(query)
     if tables and tables[0].records:
@@ -623,10 +633,10 @@ def get_history(beehive_id: int, range_: str = "24h") -> list:
     query = f'''
         from(bucket: "{current_app.config["INFLUXDB_BUCKET"]}")
           |> range(start: -{range_})
-          |> filter(fn: (r) => r._measurement == "releve")
-          |> filter(fn: (r) => r.ruche_id == "{beehive_id}")
+          |> filter(fn: (r) => r.beehive_id == "{beehive_id}")
+          |> filter(fn: (r) => r._measurement == "temperature_int" or r._measurement == "humidity_int" or r._measurement == "temperature_ext" or r._measurement == "humidity_ext")
           |> aggregateWindow(every: 5m, fn: mean)
-          |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+          |> pivot(rowKey: ["_time"], columnKey: ["_measurement"], valueColumn: "_value")
     '''
     # aggregateWindow regroupe par fenêtres de 5 min et calcule la moyenne.
     # Indispensable pour les longues périodes (7j, 30j) sinon on retourne
@@ -655,39 +665,40 @@ Le login/mot de passe sont ceux définis dans le `.env` (`INFLUXDB_TOKEN` pour l
 
 **Dernier relevé de toutes les ruches :**
 ```flux
-from(bucket: "ruche")
+from(bucket: "sensors")
   |> range(start: -1h)
-  |> filter(fn: (r) => r._measurement == "releve")
+  |> filter(fn: (r) => r._measurement == "temperature_int" or r._measurement == "humidity_int" or r._measurement == "temperature_ext" or r._measurement == "humidity_ext")
   |> last()
-  |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+  |> pivot(rowKey: ["_time"], columnKey: ["_measurement"], valueColumn: "_value")
 ```
 
-**Historique température d'une ruche sur 24h :**
+**Historique de la température intérieure d'une ruche sur 24h :**
 ```flux
-from(bucket: "ruche")
+from(bucket: "sensors")
   |> range(start: -24h)
-  |> filter(fn: (r) => r._measurement == "releve")
-  |> filter(fn: (r) => r.ruche_id == "1")
-  |> filter(fn: (r) => r._field == "temperature")
+  |> filter(fn: (r) => r.beehive_id == "1")
+  |> filter(fn: (r) => r._measurement == "temperature_int")
   |> aggregateWindow(every: 30m, fn: mean)
 ```
 
-**Détecter les pics audio anormaux (pic > 450 Hz) :**
+**Humidité intérieure vs extérieure d'une ruche :**
 ```flux
-from(bucket: "ruche")
-  |> range(start: -1h)
-  |> filter(fn: (r) => r._measurement == "releve")
-  |> filter(fn: (r) => r._field == "audio_peak_hz")
-  |> filter(fn: (r) => r._value > 450.0)
+from(bucket: "sensors")
+  |> range(start: -24h)
+  |> filter(fn: (r) => r.beehive_id == "1")
+  |> filter(fn: (r) => r._measurement == "humidity_int" or r._measurement == "humidity_ext")
+  |> aggregateWindow(every: 30m, fn: mean)
 ```
 
-**Moyenne de toutes les ruches sur une plage :**
+> Le son et la luminosité se requêtent à l'identique en filtrant sur
+> `sound_freq_int`, `sound_amp_int`, `sound_freq_ext`, `sound_amp_ext` ou `light_ext`.
+
+**Moyenne de température intérieure de toutes les ruches sur 7 jours :**
 ```flux
-from(bucket: "ruche")
+from(bucket: "sensors")
   |> range(start: -7d)
-  |> filter(fn: (r) => r._measurement == "releve")
-  |> filter(fn: (r) => r._field == "temperature")
-  |> group(columns: ["ruche_id"])
+  |> filter(fn: (r) => r._measurement == "temperature_int")
+  |> group(columns: ["beehive_id"])
   |> mean()
 ```
 
@@ -701,10 +712,10 @@ docker compose exec influxdb bash
 influx bucket list
 
 # Supprimer des données anciennes (ex: garder seulement 30j)
-influx bucket update --name ruche --retention 720h
+influx bucket update --name sensors --retention 720h
 
 # Exporter des données en CSV
-influx query 'from(bucket:"ruche") |> range(start:-24h)' --raw > export.csv
+influx query 'from(bucket:"sensors") |> range(start:-24h)' --raw > export.csv
 
 # Voir l'état du service depuis le Pi
 docker compose logs -f influxdb
@@ -1073,7 +1084,7 @@ sudo journalctl -u beetter-lora -f
 # Tester l'endpoint d'ingest manuellement avec curl
 curl -X POST http://localhost:5000/api/data \
   -H "Content-Type: application/json" \
-  -d '{"id": 1, "t": 34.7, "h": 62.1}'
+  -d '{"beehive_id": 1, "temperature_int": 34.7, "humidity_int": 62.1, "temperature_ext": 18.3, "humidity_ext": 55.0}'
 
 # Réponse attendue : {"status": "ok"}
 ```
@@ -1087,7 +1098,7 @@ curl -X POST http://localhost:5000/api/data \
 curl -X POST http://localhost:8086/api/v2/query \
   -H "Authorization: Token <ton-token>" \
   -H "Content-Type: application/vnd.flux" \
-  -d 'from(bucket:"ruche") |> range(start:-1h) |> last()'
+  -d 'from(bucket:"sensors") |> range(start:-1h) |> last()'
 ```
 
 ### Raspberry Pi → Serveur distant (HTTP)
@@ -1097,7 +1108,7 @@ curl -X POST http://localhost:8086/api/v2/query \
 curl -X POST http://<ip-serveur>:5001/api/push \
   -H "Authorization: Bearer <api-key>" \
   -H "Content-Type: application/json" \
-  -d '{"beehive_id": 1, "readings": [{"t": 34.7, "h": 62.1, "timestamp": "2026-05-19T14:00:00Z"}]}'
+  -d '{"source":"beetter","pushed_at":"2026-05-19T14:35:00Z","beehives":[{"id":1,"name":"Ruche du verger","data":[{"timestamp":"2026-05-19T14:30:00Z","temperature_int":34.7,"humidity_int":62.1}]}]}'
 ```
 
 ### Serveur distant → App Android (HTTP)
@@ -1188,7 +1199,7 @@ test:      ajout ou modification de tests
 Exemples :
 ```
 feat: ajout écran alertes dans l'app Android
-fix: correction calcul score santé quand poids manquant
+fix: correction calcul score santé quand température extérieure manquante
 style: ajout animation sur les cartes ruche au survol
 chore: mise à jour Flask 3.0.3 → 3.1.0
 docs: ajout section InfluxDB dans CONTRIBUTING
