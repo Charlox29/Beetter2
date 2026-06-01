@@ -55,8 +55,8 @@ class AlertWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
         ensureNotificationChannel()
 
         beehives.forEach { hive ->
-            val temp = hive.latest?.temperature?.value
-            val hum  = hive.latest?.humidity?.value
+            val temp = hive.latest?.temperatureInt?.value
+            val hum  = hive.latest?.humidityInt?.value
 
             if (temp != null && temp > tempMax)
                 notify("Beehive #${hive.id} — high temperature", "%.1f°C (max %.1f°C)".format(temp, tempMax))

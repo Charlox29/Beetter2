@@ -22,9 +22,20 @@ data class SensorValue(
     val time: String?,
 )
 
+/**
+ * Latest known value for each sensor stream of a beehive.
+ * Keys map to the InfluxDB measurement names produced by the Raspberry Pi.
+ */
 data class BeehiveLatest(
-    val temperature: SensorValue?,
-    val humidity: SensorValue?,
+    @SerializedName("temperature_int") val temperatureInt: SensorValue?,
+    @SerializedName("humidity_int")    val humidityInt: SensorValue?,
+    @SerializedName("temperature_ext") val temperatureExt: SensorValue?,
+    @SerializedName("humidity_ext")    val humidityExt: SensorValue?,
+    @SerializedName("sound_freq_int")  val soundFreqInt: SensorValue?,
+    @SerializedName("sound_amp_int")   val soundAmpInt: SensorValue?,
+    @SerializedName("sound_freq_ext")  val soundFreqExt: SensorValue?,
+    @SerializedName("sound_amp_ext")   val soundAmpExt: SensorValue?,
+    @SerializedName("light_ext")       val lightExt: SensorValue?,
 )
 
 data class BeehiveItem(
@@ -44,6 +55,13 @@ data class ChartSeries(
 )
 
 data class ChartDataResponse(
-    val temperature: ChartSeries?,
-    val humidity: ChartSeries?,
+    @SerializedName("temperature_int") val temperatureInt: ChartSeries?,
+    @SerializedName("humidity_int")    val humidityInt: ChartSeries?,
+    @SerializedName("temperature_ext") val temperatureExt: ChartSeries?,
+    @SerializedName("humidity_ext")    val humidityExt: ChartSeries?,
+    @SerializedName("sound_freq_int")  val soundFreqInt: ChartSeries?,
+    @SerializedName("sound_amp_int")   val soundAmpInt: ChartSeries?,
+    @SerializedName("sound_freq_ext")  val soundFreqExt: ChartSeries?,
+    @SerializedName("sound_amp_ext")   val soundAmpExt: ChartSeries?,
+    @SerializedName("light_ext")       val lightExt: ChartSeries?,
 )

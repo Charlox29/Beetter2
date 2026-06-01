@@ -66,17 +66,64 @@ fun BeehiveDetailScreen(
                 state.data != null -> {
                     val data = state.data!!
 
+                    // ── Temperature & humidity ──────────────────────────
                     ChartCard(
-                        title = "Temperature",
+                        title = "Interior temperature",
                         unit = "°C",
                         color = MaterialTheme.colorScheme.error,
-                        points = data.temperature?.data ?: emptyList(),
+                        points = data.temperatureInt?.data ?: emptyList(),
                     )
                     ChartCard(
-                        title = "Humidity",
+                        title = "Exterior temperature",
+                        unit = "°C",
+                        color = Color(0xFFEF6C00),
+                        points = data.temperatureExt?.data ?: emptyList(),
+                    )
+                    ChartCard(
+                        title = "Interior humidity",
                         unit = "%",
                         color = Color(0xFF1565C0),
-                        points = data.humidity?.data ?: emptyList(),
+                        points = data.humidityInt?.data ?: emptyList(),
+                    )
+                    ChartCard(
+                        title = "Exterior humidity",
+                        unit = "%",
+                        color = Color(0xFF42A5F5),
+                        points = data.humidityExt?.data ?: emptyList(),
+                    )
+
+                    // ── Microphones (peak frequency + amplitude) ─────────
+                    ChartCard(
+                        title = "Interior sound — peak frequency",
+                        unit = "Hz",
+                        color = Color(0xFF6A1B9A),
+                        points = data.soundFreqInt?.data ?: emptyList(),
+                    )
+                    ChartCard(
+                        title = "Interior sound — amplitude",
+                        unit = "",
+                        color = Color(0xFF00897B),
+                        points = data.soundAmpInt?.data ?: emptyList(),
+                    )
+                    ChartCard(
+                        title = "Exterior sound — peak frequency",
+                        unit = "Hz",
+                        color = Color(0xFFAB47BC),
+                        points = data.soundFreqExt?.data ?: emptyList(),
+                    )
+                    ChartCard(
+                        title = "Exterior sound — amplitude",
+                        unit = "",
+                        color = Color(0xFF26A69A),
+                        points = data.soundAmpExt?.data ?: emptyList(),
+                    )
+
+                    // ── Photoresistor ────────────────────────────────────
+                    ChartCard(
+                        title = "Exterior light",
+                        unit = "lx",
+                        color = Color(0xFFF9A825),
+                        points = data.lightExt?.data ?: emptyList(),
                     )
                 }
             }

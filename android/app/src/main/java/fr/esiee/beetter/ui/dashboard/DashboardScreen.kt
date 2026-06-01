@@ -76,13 +76,13 @@ private fun BeehiveCard(hive: BeehiveItem, onClick: () -> Unit) {
             Text("Beehive #${hive.id}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 SensorChip(
-                    label = "Temperature",
-                    value = hive.latest?.temperature?.value?.let { "%.1f°C".format(it) } ?: "—",
+                    label = "Interior temp.",
+                    value = hive.latest?.temperatureInt?.value?.let { "%.1f°C".format(it) } ?: "—",
                     modifier = Modifier.weight(1f),
                 )
                 SensorChip(
-                    label = "Humidity",
-                    value = hive.latest?.humidity?.value?.let { "%.1f%%".format(it) } ?: "—",
+                    label = "Interior hum.",
+                    value = hive.latest?.humidityInt?.value?.let { "%.1f%%".format(it) } ?: "—",
                     modifier = Modifier.weight(1f),
                 )
             }
