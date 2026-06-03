@@ -37,8 +37,8 @@ SOUND_FREQ_AMP  = 40.0
 SOUND_AMP_BASE  = 0.35
 SOUND_AMP_AMP   = 0.15
 
-# Light: exterior illuminance (relative / lux-ish), day/night cycle
-LIGHT_DAY_MAX = 1000.0
+# Light: exterior light level (%), day/night cycle
+LIGHT_DAY_MAX = 100.0
 
 
 def simulate_reading(beehive_id: int, when: datetime) -> dict:
@@ -58,8 +58,8 @@ def simulate_reading(beehive_id: int, when: datetime) -> dict:
     sf_ext = 120.0 + 30.0 * math.sin(phase) + random.gauss(0, 10)
     sa_ext = 0.10  + 0.05 * math.sin(phase) + random.gauss(0, 0.02)
 
-    # Photoresistor: bright at midday, ~0 at night
-    light = max(0.0, LIGHT_DAY_MAX * math.sin(math.pi * hour / 24) + random.gauss(0, 20))
+    # Photoresistor: bright at midday (100%), ~0 at night
+    light = max(0.0, min(100.0, LIGHT_DAY_MAX * math.sin(math.pi * hour / 24) + random.gauss(0, 2)))
 
     return {
         "beehive_id": beehive_id,
@@ -84,7 +84,7 @@ def send(url: str, payload: dict) -> bool:
                   f"Tint={payload['temperature_int']}°C Hint={payload['humidity_int']}%  "
                   f"Text={payload['temperature_ext']}°C Hext={payload['humidity_ext']}%  "
                   f"Sint={payload['sound_freq_int']}Hz/{payload['sound_amp_int']}  "
-                  f"L={payload['light_ext']}  @ {payload['timestamp']}")
+                  f"L={payload['light_ext']}%  @ {payload['timestamp']}")
             return True
         print(f"  ✗  HTTP {r.status_code}: {r.text}")
         return False
