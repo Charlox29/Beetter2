@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini-jeu Beetter</title>
+
+    <link rel="icon" type="image/png" sizes="32x32" href="Logo_B.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body class="no-scroll">
+
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html"><img src="Logo Beetter.svg" alt="Logo Beetter" class="logo-img"></a>
+        </div>
+        <div class="nav-controls">
+            <a href="index.html" class="nav-link-button lang-fr">Retour</a>
+            <a href="index.html" class="nav-link-button lang-en">Back</a>
+            <button id="lang-toggle" class="lang-btn" aria-label="Changer de langue">FR | EN</button>
+            <button id="theme-toggle" class="theme-btn" aria-label="Basculer le thème">
+                <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </button>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+                <br>
+                <div class="section-header" style="text-align:center;">
+                <p class="subtitle lang-fr">Chassez les <strong style="color:#ff4444;">frelons</strong> en évitez les <strong style="color:var(--accent);">abeilles</strong></p>
+                <p class="subtitle lang-en">Get rid of <strong style="color:#ff4444;">hornets</strong> and avoid the <strong style="color:var(--accent);">bees</strong></p>
+            </div>
+
+            <div class="hive-stage">
+                <div class="hive-graphic">🏠🐝</span></div>
+
+                <!-- Légende visuelle -->
+                <div class="game-legend" id="game-legend" style="display:none;">
+                    <div class="legend-item">
+                        <span style="font-size:1.8rem;filter:hue-rotate(320deg) brightness(0.7) saturate(3);">🐝</span>
+                    </div>
+                    <div class="legend-item">
+                        <span style="font-size:1.8rem;filter:drop-shadow(0 2px 4px rgba(245,203,92,0.6));">🐝</span>
+                    </div>
+                </div>
+
+                <div class="game-panel"> 
+                    <div class="score-display" id="score-box">
+                        <p>SCORE : </p>
+                        <span id="score-val">0</span>
+                    </div>
+                    <button id="start-game-btn" class="cta-button lang-fr">🎮 Démarrer le jeu</button>
+                    <button id="start-game-btn-en" class="cta-button lang-en">🎮 Start game</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Conteneurs volants -->
+    <div class="bees-container" id="bees-container"></div>
+    <div id="hornets-container"></div>
+
+    <!-- Game Over overlay -->
+    <div class="game-over-overlay" id="game-over">
+        <div class="game-over-box">
+            <h2 class="lang-fr">🐝 Partie terminée !</h2>
+            <h2 class="lang-en">🐝 Game over!</h2>
+            <div class="final-score" id="final-score">0</div>
+            <p class="lang-fr" style="color:var(--text-secondary);margin-bottom:2rem;">frelons éliminés</p>
+            <p class="lang-en" style="color:var(--text-secondary);margin-bottom:2rem;">hornets eliminated</p>
+            <button id="restart-btn" class="cta-button">
+                <span class="lang-fr">Rejouer</span>
+                <span class="lang-en">Play again</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // === THÈME ===
+        const themeBtn = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const html = document.documentElement;
+        html.setAttribute('data-theme', 'dark');
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+        themeBtn.addEventListener('click', () => {
+            const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            sunIcon.style.display = newTheme === 'dark' ? 'block' : 'none';
+            moonIcon.style.display = newTheme === 'dark' ? 'none' : 'block';
+        });
+
+        // === LANGUE ===
+        const langBtn = document.getElementById('lang-toggle');
+        langBtn.addEventListener('click', () => {
+            const newLang = html.getAttribute('lang') === 'fr' ? 'en' : 'fr';
+            html.setAttribute('lang', newLang);
+            langBtn.textContent = newLang === 'fr' ? 'FR | EN' : 'EN | FR';
+        });
+
+        // === JEU ===
+        let score = 0;
+        let gameInterval = null;
+        let beeInterval = null;
+        let gameActive = false;
+        let hornetsKilled = 0;
+
+        const scoreBox       = document.getElementById('score-box');
+        const scoreVal       = document.getElementById('score-val');
+        const beesContainer  = document.getElementById('bees-container');
+        const hornetsContainer = document.getElementById('hornets-container');
+        const startBtnFr     = document.getElementById('start-game-btn');
+        const startBtnEn     = document.getElementById('start-game-btn-en');
+        const gameOverEl     = document.getElementById('game-over');
+        const finalScoreEl   = document.getElementById('final-score');
+        const restartBtn     = document.getElementById('restart-btn');
+        const gameLegend     = document.getElementById('game-legend');
+
+        function showPopup(x, y, text, color) {
+            const pop = document.createElement('div');
+            pop.className = 'score-popup';
+            pop.textContent = text;
+            pop.style.left = x + 'px';
+            pop.style.top  = y + 'px';
+            pop.style.color = color;
+            document.body.appendChild(pop);
+            setTimeout(() => pop.remove(), 800);
+        }
+
+        function spawnHornet() {
+            if (!gameActive) return;
+            const hornet = document.createElement('div');
+            hornet.classList.add('hornet');
+            hornet.textContent = '🐝';
+
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            let startX, startY, endX, endY;
+            const edge = Math.floor(Math.random() * 4);
+            switch(edge) {
+                case 0: startX = Math.random()*w; startY = -100; endX = Math.random()*w; endY = h+100; break;
+                case 1: startX = w+100; startY = Math.random()*h; endX = -100; endY = Math.random()*h; break;
+                case 2: startX = Math.random()*w; startY = h+100; endX = Math.random()*w; endY = -100; break;
+                default: startX = -100; startY = Math.random()*h; endX = w+100; endY = Math.random()*h;
+            }
+
+            const isRight = endX > startX;
+            const scale = isRight ? 'scaleX(-1)' : 'scaleX(1)';
+            const duration = Math.random()*4000 + 4000;
+
+            function handleHornetKill(e) {
+                if (!gameActive) return;
+                e.preventDefault && e.preventDefault();
+                const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+                const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+                score++;
+                hornetsKilled++;
+                scoreVal.textContent = score;
+                const hiveScoreEl = document.getElementById('hive-score-val');
+                if (hiveScoreEl) hiveScoreEl.textContent = score;
+                showPopup(clientX, clientY, '+1 🎯', '#4caf50');
+                this.remove();
+            }
+            hornet.addEventListener('mousedown', handleHornetKill);
+            hornet.addEventListener('touchstart', handleHornetKill, { passive: false });
+
+            hornetsContainer.appendChild(hornet);
+
+            const anim = hornet.animate([
+                { transform: `translate(${startX}px, ${startY}px) ${scale}` },
+                { transform: `translate(${endX}px, ${endY}px) ${scale}` }
+            ], { duration, easing: 'linear' });
+
+            anim.onfinish = () => { if (document.body.contains(hornet)) hornet.remove(); };
+        }
+
+        function spawnBee() {
+            if (!gameActive) return;
+            const bee = document.createElement('div');
+            bee.classList.add('bee');
+            bee.textContent = '🐝';
+
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const startX = Math.random()*(w-80);
+            const startY = Math.random()*(h-80);
+            const endX   = Math.random()*(w-80);
+            const endY   = Math.random()*(h-80);
+            const duration = Math.random()*4000 + 5000;
+
+            bee.style.left = `${startX}px`;
+            bee.style.top  = `${startY}px`;
+
+            function handleBeeHit(e) {
+                if (!gameActive) return;
+                e.preventDefault && e.preventDefault();
+                const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+                const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+                score--;
+                scoreVal.textContent = score;
+                const hiveScoreEl = document.getElementById('hive-score-val');
+                if (hiveScoreEl) hiveScoreEl.textContent = score;
+                showPopup(clientX, clientY, '-1 😢', '#ff9800');
+                this.remove();
+                if (score < 0) {
+                    endGame();
+                }
+            }
+            bee.addEventListener('mousedown', handleBeeHit);
+            bee.addEventListener('touchstart', handleBeeHit, { passive: false });
+
+            beesContainer.appendChild(bee);
+            bee.animate([
+                { transform: 'translate(0px, 0px)' },
+                { transform: `translate(${endX-startX}px, ${endY-startY}px)` }
+            ], { duration, easing: 'ease-in-out', direction: 'alternate', iterations: Infinity });
+        }
+
+        function startGame() {
+            if (gameInterval) return;
+            gameActive = true;
+            score = 0;
+            hornetsKilled = 0;
+            scoreVal.textContent = 0;
+            scoreBox.classList.add('active');
+            startBtnFr.style.display = 'none';
+            startBtnEn.style.display = 'none';
+            // hide legend once the game has started
+            gameLegend.style.display = 'none';
+            const hiveScoreEl = document.getElementById('hive-score-val');
+            if (hiveScoreEl) hiveScoreEl.textContent = '0';
+
+            // Spawn 4 abeilles au départ
+            for (let i = 0; i < 4; i++) spawnBee();
+
+            gameInterval = setInterval(spawnHornet, 1500);
+            beeInterval  = setInterval(spawnBee, 3000);
+        }
+
+        function endGame() {
+            // Stop spawn timers and show overlay when score goes negative
+            gameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(beeInterval);
+            gameInterval = null;
+            beeInterval = null;
+            beesContainer.innerHTML = '';
+            hornetsContainer.innerHTML = '';
+            finalScoreEl.textContent = hornetsKilled;
+            gameOverEl.style.display = 'flex';
+            scoreBox.classList.remove('active');
+        }
+
+        function resetGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(beeInterval);
+            gameInterval = null;
+            beeInterval = null;
+            beesContainer.innerHTML = '';
+            hornetsContainer.innerHTML = '';
+            gameOverEl.style.display = 'none';
+            startBtnFr.style.display = '';
+            startBtnEn.style.display = '';
+            scoreBox.classList.remove('active');
+            // restore legend and reset hive score display
+            gameLegend.style.display = 'flex';
+            score = 0;
+            scoreVal.textContent = 0;
+            const hiveScoreEl = document.getElementById('hive-score-val');
+            if (hiveScoreEl) hiveScoreEl.textContent = '0';
+        }
+
+        startBtnFr.addEventListener('click', startGame);
+        startBtnEn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>
