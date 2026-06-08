@@ -85,7 +85,7 @@
         <ul class="nav-links" id="nav-links">
             <li><a href="#problematique" class="lang-fr">Problème</a><a href="#problematique" class="lang-en">Problem</a></li>
             <li><a href="#solution" class="lang-fr">Solution</a><a href="#solution" class="lang-en">Solution</a></li>
-            <li><a href="#comment" class="lang-fr">Architecture</a><a href="#comment" class="lang-en">Architecture</a></li>
+            <li><a href="#ethique" class="lang-fr">Éthique</a><a href="#ethique" class="lang-en">Ethics</a></li>
             <li><a href="#dashboard" class="lang-fr">Tableau de Bord</a><a href="#dashboard" class="lang-en">Dashboard</a></li>
             <li><a href="#technologie" class="lang-fr">Fonctionnalités</a><a href="#technologie" class="lang-en">Features</a></li>
             <li><a href="#equipe" class="lang-fr">Équipe</a><a href="#equipe" class="lang-en">Team</a></li>
@@ -330,34 +330,40 @@
         </div>
     </section>
 
-    <!-- ══════════════════════ ARCHITECTURE MATÉRIELLE ══════════════════════ -->
-    <section id="architecture" class="section bg-alt">
+    <!-- ══════════════════════ ÉTHIQUE ══════════════════════ -->
+    <section id="ethique" class="section bg-alt">
         <div class="container">
             <div class="section-header">
                 <h2>
-                    <span class="lang-fr">Architecture Matérielle</span>
-                    <span class="lang-en">Hardware Architecture</span>
+                    <span class="lang-fr">Éthique &amp; Conception</span>
+                    <span class="lang-en">Ethics &amp; Design</span>
                 </h2>
                 <div class="divider"></div>
-                <p class="subtitle lang-fr">Conception optimisée pour un coût unitaire de ~200 €, soit 2× moins cher que les alternatives commerciales (Mellia, +400 €).</p>
-                <p class="subtitle lang-en">Optimized design for a unit cost of ~200 €, 2× cheaper than commercial alternatives (Mellia, +400 €).</p>
             </div>
             <div class="grid-2">
                 <div class="card">
-                    <h3 class="lang-fr">Composants Beetter Hive</h3>
-                    <h3 class="lang-en">Beetter Hive Components</h3>
-                    <p class="lang-fr"><strong>ESP32-C6</strong> (MCU principal) · <strong>SHT40 ×2</strong> (temp/humidité) · <strong>ADA6049 ×2</strong> (microphones I2S) · <strong>RFM95 LoRa 868 MHz</strong> · <strong>RTC PCF8523</strong> · <strong>Lecteur Micro SD</strong> · <strong>Solar Power Manager DFR0559</strong> · <strong>Photorésistance 10 kΩ</strong></p>
-                    <p class="lang-en"><strong>ESP32-C6</strong> (main MCU) · <strong>SHT40 ×2</strong> (temp/humidity) · <strong>ADA6049 ×2</strong> (I2S microphones) · <strong>RFM95 LoRa 868 MHz</strong> · <strong>RTC PCF8523</strong> · <strong>Micro SD reader</strong> · <strong>DFR0559 Solar Power Manager</strong> · <strong>10 kΩ Photoresistor</strong></p>
+                    <h3 class="lang-fr">👥 Concevoir pour les vrais usagers</h3>
+                    <h3 class="lang-en">👥 Designing for Real Users</h3>
+                    <p class="lang-fr">Confronté à la réalité terrain lors d'un entretien avec Alexandra, apicultrice amateure, notre conception a évolué : interface web compatible tous navigateurs (y compris iOS), réduction des fausses alertes.</p>
+                    <p class="lang-en">Challenged by field reality through an interview with Alexandra, an amateur beekeeper, our design evolved: a web interface compatible with all browsers (including iOS), and reduced false alerts.</p>
                 </div>
                 <div class="card">
-                    <h3 class="lang-fr">Infrastructure Backend</h3>
-                    <h3 class="lang-en">Backend Infrastructure</h3>
-                    <p class="lang-fr"><strong>Beetter Home</strong> : <strong>Raspberry Pi 5</strong> · <strong>Flask 3</strong> · <strong>InfluxDB 2</strong> (time-series) · <strong>PostgreSQL</strong> (métadonnées) · <strong>Docker Compose</strong> · <strong>APScheduler</strong> pour le push périodique vers le VPS cloud.</p>
-                    <p class="lang-en"><strong>Beetter Home</strong>: <strong>Raspberry Pi 5</strong> · <strong>Flask 3</strong> · <strong>InfluxDB 2</strong> (time-series) · <strong>PostgreSQL</strong> (metadata) · <strong>Docker Compose</strong> · <strong>APScheduler</strong> for periodic push to the cloud VPS.</p>
+                    <h3 class="lang-fr">⚖️ Détecter, pas agir</h3>
+                    <h3 class="lang-en">⚖️ Detect, Not Act</h3>
+                    <p class="lang-fr">Beetter signale - il ne décide pas. Nous avons renoncé aux trappes et répulsifs automatiques : l'apiculteur reste le seul à décider de la réponse, selon sa connaissance du terrain.</p>
+                    <p class="lang-en">Beetter alerts - it does not decide. We chose not to include automatic traps or repellents: the beekeeper alone decides how to respond, based on their field knowledge.</p>
                 </div>
             </div>
+            <p style="text-align:center; margin-top: 2rem;">
+                <a href="Rapport_Ethique_BERDUGO_AZZA_AGUEH_AUCOUTURIER_BOURGOIS.pdf" target="_blank" rel="noopener noreferrer" class="resource-btn resource-btn-secondary" style="display:inline-flex; align-items:center; gap:0.5rem; margin: 0 auto;">
+                    <span aria-hidden="true">📖</span>
+                    <span class="lang-fr">Lire le rapport d'éthique complet</span>
+                    <span class="lang-en">Read the full ethics report</span>
+                </a>
+            </p>
         </div>
     </section>
+
 
     <!-- ══════════════════════ ÉQUIPE ══════════════════════ -->
     <section id="equipe" class="section">

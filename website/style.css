@@ -642,6 +642,15 @@ h3 { font-size: 1.05rem; margin-bottom: 0.9rem; color: var(--text-primary); }
     color: var(--text-secondary); 
 }
 
+@media (max-width: 768px) {
+    .team-grid .team-card:last-child {
+        grid-column: 1 / -1;
+        justify-self: center;
+        max-width: 200px;
+        width: 100%;
+    }
+}
+
 /* ═══════════════════════════════════════════════════════════ */
 /* FAQ */
 /* ═══════════════════════════════════════════════════════════ */
