@@ -99,7 +99,7 @@ body.no-scroll { overflow: hidden; }
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 1.8rem;
+    gap: 1.2rem;
     list-style: none;
 }
 
@@ -111,12 +111,12 @@ body.no-scroll { overflow: hidden; }
         top: 50%;
         transform: translate(-50%, -50%);
         z-index: 1001;
-        gap: 2rem;
+        gap: 1.2rem;
     }
 }
 
 .nav-links a {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-secondary);
     text-decoration: none;
