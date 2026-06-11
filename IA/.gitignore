@@ -1,0 +1,10 @@
+# Training outputs — never commit these
+checkpoints/
+calibration/
+tsne/
+data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
